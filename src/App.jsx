@@ -5,10 +5,14 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 
 function App() {
+  // App 
+  // set isAuthenticated, setter: setIsAuthenticated state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return !!localStorage.getItem("token");
   });
   return (
+    // react-router-dom
+   
     <Routes>
       <Route
         path="/login"

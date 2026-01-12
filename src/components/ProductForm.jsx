@@ -2,21 +2,27 @@ import axios from "axios";
 import { useState } from "react";
 
 function ProductForm({ onProductCreated }) {
+  // set the states first
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  // 3. create the logic, form submission
   const handleSubmit = async (e) => {
+    // disable html form submission behavior
     e.preventDefault();
+    // set empty error message
     setError("");
+    // set loading state true
     setLoading(true);
-
+    // tarik dulu auth/bearer token dari localStorage
     const token = localStorage.getItem("token");
 
     const productData = {
+      // name (key): nama column
+      // name (value): nilai daripada input field
       name: name,
       description: description || null,
       price: parseFloat(price),
@@ -29,7 +35,7 @@ function ProductForm({ onProductCreated }) {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      // reset the input fields
       setName("");
       setDescription("");
       setPrice("");
@@ -50,7 +56,7 @@ function ProductForm({ onProductCreated }) {
       setLoading(false);
     }
   };
-
+  // 2. render the ui
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Create Product</h2>

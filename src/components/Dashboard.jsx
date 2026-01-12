@@ -7,7 +7,7 @@ import ProductList from "./ProductList";
 function Dashboard({ onLogout }) {
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
-
+  // logout's logic
   const handleLogout = async () => {
     const token = localStorage.getItem("token");
 
@@ -45,6 +45,7 @@ function Dashboard({ onLogout }) {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <button
+          // event to trigger logout
           onClick={handleLogout}
           className="text-sm font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
         >
