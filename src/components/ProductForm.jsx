@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 function ProductForm({ onProductCreated }) {
   // set the states first
@@ -7,8 +7,18 @@ function ProductForm({ onProductCreated }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const productPhotoFile = useRef(null);
+
+  const handlePhotoUpload = (e) => {
+    const photo = e.target.files[0];
+    if (photo && photo.size <= 10 * 1024 * 1024) {
+      setPhoto(photo);
+    }
+  };
+
   // 3. create the logic, form submission
   const handleSubmit = async (e) => {
     // disable html form submission behavior
@@ -20,14 +30,25 @@ function ProductForm({ onProductCreated }) {
     // tarik dulu auth/bearer token dari localStorage
     const token = localStorage.getItem("token");
 
-    const productData = {
-      // name (key): nama column
-      // name (value): nilai daripada input field
-      name: name,
-      description: description || null,
-      price: parseFloat(price),
-      stock: stock ? parseInt(stock) : 0,
-    };
+    // const productData = {
+    //   // name (key): nama column
+    //   // name (value): nilai daripada input field
+    //   name: name,
+    //   description: description || null,
+    //   price: parseFloat(price),
+    //   stock: stock ? parseInt(stock) : 0,
+    //   photo: photo ? photo : null,
+    // };
+    // kena guna FormData() sebab ada file upload
+    const productData = new FormData();
+    productData.append("name", name);
+    productData.append("description", description || null);
+    productData.append("price", parseFloat(price));
+    productData.append("stock", stock ? parseInt(stock) : 0);
+
+    if (photo) {
+      productData.append("photo", photo);
+    }
 
     try {
       await axios.post("http://localhost:8000/api/v1/products", productData, {
@@ -40,6 +61,10 @@ function ProductForm({ onProductCreated }) {
       setDescription("");
       setPrice("");
       setStock("");
+      setPhoto(null);
+      if (productPhotoFile.current) {
+        productPhotoFile.current.value = "";
+      }
 
       if (onProductCreated) {
         onProductCreated();
@@ -60,11 +85,13 @@ function ProductForm({ onProductCreated }) {
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Create Product</h2>
-      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow rounded-lg p-6"
+        encType="multipart/form-data"
+      >
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded">
-            {error}
-          </div>
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded">{error}</div>
         )}
 
         <div className="mb-4">
@@ -118,6 +145,24 @@ function ProductForm({ onProductCreated }) {
             onChange={(e) => setStock(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Product Photo
+          </label>
+
+          <input
+            ref={productPhotoFile}
+            disabled={loading}
+            onChange={handlePhotoUpload}
+            type="file"
+          />
+          <p
+            className="mt-1 text-sm text-gray-500 dark:text-gray-300"
+            id="file_input_help"
+          >
+            SVG, PNG, JPG or GIF (MAX. 800x400px).
+          </p>
         </div>
 
         <button
