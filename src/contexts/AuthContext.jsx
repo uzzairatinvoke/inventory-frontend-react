@@ -4,6 +4,7 @@ import axios from "axios";
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
+  // wakilkan context variable untuk create AuthContext
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
@@ -12,6 +13,8 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  // create the usual state, user and usersetter (setUser)
+  // initially set as null
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserInfo = async () => {
     const token = localStorage.getItem("token");
+    // negative statement dulu, early return
     if (!token) {
       setUser(null);
       setLoading(false);
@@ -77,14 +81,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const hasPermission = (permission) => {
+    // kalau user object takde return false
     if (!user) return false;
     
-    
+    // check dulu user punya permissions
     if (user.permissions && Array.isArray(user.permissions)) {
+      
       return user.permissions.includes(permission);
     }
     
-    
+    // checku user roles
     if (user.roles && Array.isArray(user.roles)) {
       
       const rolePermissions = {
@@ -92,10 +98,13 @@ export const AuthProvider = ({ children }) => {
         staff: ['products-view', 'products-create', 'products-update'],
         viewer: ['products-view'],
       };
-      
+      // checking check user ni ada role apa, then check apa yang dia boleh buat
       return user.roles.some(role => {
         const roleName = typeof role === 'string' ? role : role.name;
+        // table lookup
         return rolePermissions[roleName]?.includes(permission);
+
+        // rolePermissions['admin']
       });
     }
     

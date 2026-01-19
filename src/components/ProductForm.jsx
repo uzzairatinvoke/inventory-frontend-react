@@ -3,9 +3,10 @@ import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 function ProductForm({ onProductCreated }) {
+  // 1. guna useAuth() untuk check permissions
   const { hasPermission } = useAuth();
   
-  // Only render if user has create permission
+  // 2. Only render if user has create permission
   if (!hasPermission("products-create")) {
     return null;
   }

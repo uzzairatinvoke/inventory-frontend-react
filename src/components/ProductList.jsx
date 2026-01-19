@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 function ProductList() {
+  // 1. guna useAuth() untuk check permissions
   const { hasPermission } = useAuth();
   // 1. set the state
   const [products, setProducts] = useState([]);
@@ -97,6 +98,7 @@ function ProductList() {
                   {(hasPermission("products-update") || hasPermission("products-delete")) && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        {/* check if user has products update permission */}
                         {hasPermission("products-update") && (
                           <button
                             className="text-indigo-600 hover:text-indigo-900"
@@ -108,6 +110,7 @@ function ProductList() {
                             Edit
                           </button>
                         )}
+                        {/* check if user has products delete permission */}
                         {hasPermission("products-delete") && (
                           <button
                             className="text-red-600 hover:text-red-900"
