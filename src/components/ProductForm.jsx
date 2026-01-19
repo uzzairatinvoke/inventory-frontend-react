@@ -10,10 +10,14 @@ function ProductForm({ onProductCreated }) {
   const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // 1. set the useRef value
   const productPhotoFile = useRef(null);
 
+  // function untuk handle upload file input
   const handlePhotoUpload = (e) => {
+    // wakilkan photo sebagai variable
     const photo = e.target.files[0];
+    // file size validation, kurang dari 10MB
     if (photo && photo.size <= 10 * 1024 * 1024) {
       setPhoto(photo);
     }
@@ -39,7 +43,9 @@ function ProductForm({ onProductCreated }) {
     //   stock: stock ? parseInt(stock) : 0,
     //   photo: photo ? photo : null,
     // };
-    // kena guna FormData() sebab ada file upload
+
+    //kena guna FormData() sebab ada file upload
+    // instantiate productData sebagai FormData
     const productData = new FormData();
     productData.append("name", name);
     productData.append("description", description || null);
@@ -62,6 +68,7 @@ function ProductForm({ onProductCreated }) {
       setPrice("");
       setStock("");
       setPhoto(null);
+      // 3. remove current value 
       if (productPhotoFile.current) {
         productPhotoFile.current.value = "";
       }
@@ -150,12 +157,12 @@ function ProductForm({ onProductCreated }) {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Product Photo
           </label>
-
           <input
             ref={productPhotoFile}
             disabled={loading}
             onChange={handlePhotoUpload}
             type="file"
+            
           />
           <p
             className="mt-1 text-sm text-gray-500 dark:text-gray-300"

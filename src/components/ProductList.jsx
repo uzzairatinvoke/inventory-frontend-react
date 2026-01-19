@@ -10,11 +10,14 @@ function ProductList() {
     // tarik token dari localStorage
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("http://localhost:8000/api/v1/products", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/products",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setProducts(response.data.data || []);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -69,6 +72,9 @@ function ProductList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.stock}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <img src={product.photo} alt="" />
                   </td>
                 </tr>
               ))}
