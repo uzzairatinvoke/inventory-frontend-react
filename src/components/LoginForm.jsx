@@ -1,30 +1,37 @@
 import axios from "axios";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 function LoginForm({ onLoginSuccess }) {
   // set states untuk email dan password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  
   // create the login function
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     // disable html form submission behavior by using e.preventDefault()
     e.preventDefault();
-    // call the login api using axios
-    axios
-      .post("http://localhost:8000/api/v1/login", {
+    setError("");
+    
+    try {
+      // call the login api using axios
+      const response = await axios.post("http://localhost:8000/api/v1/login", {
         email: email,
         password: password,
-      })
-      
-      .then((response) => {
-        if (response.data.token) {
-          // kita akan set bearer token dalam browser's localStorage
-          localStorage.setItem("token", response.data.token);
-          if (onLoginSuccess) {
-            onLoginSuccess();
-          }
-        }
       });
+      
+      if (response.data.token) {
+        // Store token and user info using AuthContext
+        login(response.data.token, response.data.user);
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    }
   };
   // render the UI 
   return (
@@ -39,6 +46,11 @@ function LoginForm({ onLoginSuccess }) {
         <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
           {/* 1. onSubmit event perlu ada logic */}
           <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded">
+                {error}
+              </div>
+            )}
             <div>
               <label
                 htmlFor="email"

@@ -1,7 +1,9 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 function ProductList() {
+  const { hasPermission } = useAuth();
   // 1. set the state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,14 @@ function ProductList() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stock
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Photo
+                </th>
+                {(hasPermission("products-update") || hasPermission("products-delete")) && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -74,8 +84,60 @@ function ProductList() {
                     {product.stock}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <img src={product.photo} alt="" />
+                    {product.photo ? (
+                      <img 
+                        src={product.photo} 
+                        alt={product.name} 
+                        className="h-16 w-16 object-cover rounded"
+                      />
+                    ) : (
+                      <span className="text-gray-400">No photo</span>
+                    )}
                   </td>
+                  {(hasPermission("products-update") || hasPermission("products-delete")) && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        {hasPermission("products-update") && (
+                          <button
+                            className="text-indigo-600 hover:text-indigo-900"
+                            onClick={() => {
+                              // TODO: Implement edit functionality
+                              alert("Edit functionality coming soon");
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {hasPermission("products-delete") && (
+                          <button
+                            className="text-red-600 hover:text-red-900"
+                            onClick={async () => {
+                              if (window.confirm("Are you sure you want to delete this product?")) {
+                                const token = localStorage.getItem("token");
+                                try {
+                                  await axios.delete(
+                                    `http://localhost:8000/api/v1/products/${product.id}`,
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                    }
+                                  );
+                                  // Refresh the product list
+                                  fetchProducts();
+                                } catch (error) {
+                                  console.error("Error deleting product:", error);
+                                  alert("Failed to delete product");
+                                }
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

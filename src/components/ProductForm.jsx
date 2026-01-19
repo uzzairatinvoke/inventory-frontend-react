@@ -1,7 +1,14 @@
 import axios from "axios";
 import { useRef, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 function ProductForm({ onProductCreated }) {
+  const { hasPermission } = useAuth();
+  
+  // Only render if user has create permission
+  if (!hasPermission("products-create")) {
+    return null;
+  }
   // set the states first
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

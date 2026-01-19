@@ -3,16 +3,23 @@ import "./App.css";
 import LoginForm from "./components/LoginForm";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
-function App() {
-  // App 
-  // set isAuthenticated, setter: setIsAuthenticated state
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!localStorage.getItem("token");
-  });
+function AppRoutes() {
+  const { isAuthenticated, loading } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // react-router-dom
-   
     <Routes>
       <Route
         path="/login"
@@ -20,7 +27,11 @@ function App() {
           isAuthenticated ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />
+            <LoginForm 
+              onLoginSuccess={() => {
+                setRefreshKey((prev) => prev + 1);
+              }} 
+            />
           )
         }
       />
@@ -28,7 +39,12 @@ function App() {
         path="/dashboard"
         element={
           isAuthenticated ? (
-            <Dashboard onLogout={() => setIsAuthenticated(false)} />
+            <Dashboard 
+              key={refreshKey}
+              onLogout={() => {
+                setRefreshKey((prev) => prev + 1);
+              }} 
+            />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -41,6 +57,14 @@ function App() {
         }
       />
     </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
 
