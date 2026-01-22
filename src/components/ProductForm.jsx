@@ -1,25 +1,57 @@
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 function ProductForm({ onProductCreated }) {
   // 1. guna useAuth() untuk check permissions
   const { hasPermission } = useAuth();
   
-  // 2. Only render if user has create permission
-  if (!hasPermission("products-create")) {
-    return null;
-  }
   // set the states first
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  // state untuk product category id
+  // set category id di dalam form untuk dihantar ke dalam post request
+  const [categoryId, setCategoryId] = useState("");
+  // state untuk product category
+  // state untuk populate product category daripada database
+  const [categories, setCategories] = useState([]);
   const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // 1. set the useRef value
   const productPhotoFile = useRef(null);
+
+  // Fetch categories
+  useEffect(() => {
+
+     // function untuk fetch product categories
+    const fetchCategories = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/v1/categories",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // setter
+        setCategories(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // 2. Only render if user has create permission (after all hooks)
+  if (!hasPermission("products-create")) {
+    return null;
+  }
 
   // function untuk handle upload file input
   const handlePhotoUpload = (e) => {
@@ -59,6 +91,10 @@ function ProductForm({ onProductCreated }) {
     productData.append("description", description || null);
     productData.append("price", parseFloat(price));
     productData.append("stock", stock ? parseInt(stock) : 0);
+    
+    if (categoryId) {
+      productData.append("category_id", categoryId);
+    }
 
     if (photo) {
       productData.append("photo", photo);
@@ -75,6 +111,7 @@ function ProductForm({ onProductCreated }) {
       setDescription("");
       setPrice("");
       setStock("");
+      setCategoryId("");
       setPhoto(null);
       // 3. remove current value 
       if (productPhotoFile.current) {
@@ -161,6 +198,26 @@ function ProductForm({ onProductCreated }) {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
+        {/* render the product categories dropdown */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Product Photo
